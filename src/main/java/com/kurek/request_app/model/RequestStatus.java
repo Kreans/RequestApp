@@ -5,6 +5,7 @@ import com.kurek.request_app.exception.WrongStatusChange;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,8 @@ public class RequestStatus {
     private static final Map<Status, Set<Status>> possibilityChanges = Map.of(
             Status.CREATED, Set.of(Status.DELETED, Status.VERIFIED),
             Status.VERIFIED, Set.of(Status.REJECTED, Status.ACCEPTED),
-            Status.ACCEPTED, Set.of(Status.REJECTED, Status.PUBLISHED)
+            Status.ACCEPTED, Set.of(Status.REJECTED, Status.PUBLISHED),
+            Status.PUBLISHED, Collections.emptySet()
     );
 
     public enum Status {
@@ -59,9 +61,13 @@ public class RequestStatus {
 
     private Status getRejectOrDeletedStatus() {
         final Set<Status> possibilitiesFromCurrentStatus = possibilityChanges.get(this.status);
+
+
         if (possibilitiesFromCurrentStatus.contains(Status.DELETED)) {
             return Status.DELETED;
+        } else if (possibilitiesFromCurrentStatus.contains(Status.REJECTED)) {
+            return Status.REJECTED;
         }
-        return Status.REJECTED;
+        throw new WrongStatusChange("Request cannot be canceled");
     }
 }

@@ -77,6 +77,7 @@ public class RequestService {
     }
 
     @SuppressWarnings("unchecked")
+    @Transactional
     public List<RequestDTO> getHistory(long requestId) {
         final List<Request> requests = AuditReaderFactory.get(entityManager)
                 .createQuery()

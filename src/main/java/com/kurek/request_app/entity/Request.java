@@ -1,7 +1,9 @@
 package com.kurek.request_app.entity;
 
 import com.kurek.request_app.exception.ContentModificationException;
+import com.kurek.request_app.exception.EmptyCancelReason;
 import com.kurek.request_app.model.RequestStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
@@ -15,7 +17,7 @@ public class Request {
     private long id;
 
     @Embedded
-    private RequestStatus status;
+    private RequestStatus requestStatus;
 
     private String name;
 
@@ -27,8 +29,8 @@ public class Request {
         return id;
     }
 
-    public RequestStatus getStatus() {
-        return status;
+    public RequestStatus getRequestStatus() {
+        return requestStatus;
     }
 
     public String getName() {
@@ -49,11 +51,11 @@ public class Request {
     public Request(String name, String content) {
         this.name = name;
         this.content = content;
-        this.status = new RequestStatus();
+        this.requestStatus = new RequestStatus();
     }
 
     public void modifyContent(String newContent) {
-        if (this.status.isPossibleToModifyContent()) {
+        if (this.requestStatus.isPossibleToModifyContent()) {
             this.content = newContent;
         } else {
             throw new ContentModificationException();
@@ -62,7 +64,7 @@ public class Request {
 
     public void changeStatusTo(String statusValue) {
         final var newStatus = RequestStatus.Status.valueOf(statusValue);
-        this.status.changeStatusTo(newStatus);
+        this.requestStatus.changeStatusTo(newStatus);
 
         if (newStatus == RequestStatus.Status.PUBLISHED) {
             publish();
@@ -70,10 +72,13 @@ public class Request {
     }
 
     public void cancel(String reason) {
-        this.status.rejectOrDelete(reason);
+        if (StringUtils.isEmpty(reason)) {
+            throw new EmptyCancelReason();
+        }
+        this.requestStatus.rejectOrDelete(reason);
     }
 
-    public void publish() {
+    private void publish() {
         this.number = this.id; // id is unique number value, so there is no need to use any sequence generator
     }
 }

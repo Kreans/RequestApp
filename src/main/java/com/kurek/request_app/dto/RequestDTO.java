@@ -41,8 +41,8 @@ public class RequestDTO {
     public RequestDTO(Request request) {
         this.id = request.getId();
         this.name = request.getName();
-        this.status = request.getStatus().getStatus().toString();
-        this.reason = request.getStatus().getReason();
+        this.status = request.getRequestStatus().getStatus().toString();
+        this.reason = request.getRequestStatus().getReason();
         this.content = request.getContent();
     }
 
